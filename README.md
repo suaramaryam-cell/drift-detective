@@ -2,7 +2,7 @@
 
 > Automatically detects when AWS resources drift from their Terraform-defined state and sends alerts before configuration mismatches cause production issues.
 
-## Problem Statement
+## Summary
 
 In cloud environments, manual changes made through the AWS Console often bypass Infrastructure as Code (IaC) workflows, creating **configuration drift**. This leads to:
 
@@ -65,23 +65,10 @@ In cloud environments, manual changes made through the AWS Console often bypass 
   - All scans logged to CloudWatch
   - Historical tracking capability
 
-### Detected Drift Types
-| Drift Type | Description | Example |
-|------------|-------------|---------|
-| `INSTANCE_TYPE_CHANGED` | EC2 instance size modified | `t2.micro` → `t2.small` |
-| `TAG_ADDED` | New tag added via Console | Added `Environment: prod` |
-| `TAG_MODIFIED` | Tag value changed | `Owner: alice` → `Owner: bob` |
-| `TAG_REMOVED` | Tag deleted | Removed `CostCenter` tag |
-| `SECURITY_GROUPS_CHANGED` | SG associations modified | Added/removed security groups |
-| `MONITORING_CHANGED` | Detailed monitoring toggled | `false` → `true` |
-| `DELETED` | Resource exists in Terraform but not AWS | Instance terminated manually |
-
-
-
 ##  Usage
 
 ### Manual Drift Scan
-```bash
+
 aws lambda invoke \
   --function-name drift-detective \
   --region us-east-1 \
@@ -90,7 +77,7 @@ aws lambda invoke \
 cat response.json | jq
 
 ### Create Test Drift
-```bash
+
 # Change instance type via Console
 aws ec2 modify-instance-attribute \
   --instance-id i-1234567890abcdef0 \
@@ -99,14 +86,18 @@ aws ec2 modify-instance-attribute \
 # Run detector
 aws lambda invoke --function-name drift-detective response.json
 
+![IMG_0331](https://github.com/user-attachments/assets/10ce1239-c450-4d0b-a564-c50a4bd9d2aa)
+
 ### View Logs
-```bash
+
 aws logs tail /aws/lambda/drift-detective --follow
-```
+
+
+![IMG_0333](https://github.com/user-attachments/assets/01493cd6-c54f-4e4a-a617-9268c9805c1a)
 
 ### Change Scan Schedule
 Edit `drift-detector/terraform.tfvars`:
-```hcl
+
 # Daily at 9 AM UTC
 scan_schedule = "cron(0 9 * * ? *)"
 
@@ -115,41 +106,18 @@ scan_schedule = "cron(0 */12 * * ? *)"
 
 # Monday-Friday at 6 PM UTC
 scan_schedule = "cron(0 18 ? * MON-FRI *)"
-```
+
 
 Then apply:
-```bash
+
 terraform apply
-```
+
 
 ##  Example Alert
 
-**Subject:**  Infrastructure Drift Detected - 2 change(s)
+<img width="828" height="1792" alt="IMG_2981" src="https://github.com/user-attachments/assets/25b0f636-7458-4652-a120-7720785a7177" />
 
-```
-Infrastructure Drift Detection Report
-============================================================
 
-Detected 2 drift(s) between Terraform state and actual AWS resources.
-
-Instance: i-0abc123def456789
-------------------------------------------------------------
-
-    INSTANCE_TYPE_CHANGED
-      Instance type changed from t2.micro to t2.small
-      Terraform: t2.micro
-      Actual:    t2.small
-
-    TAG_ADDED
-      Tag 'Environment' added with value 'production'
-      Terraform: None
-      Actual:    production
-
-============================================================
-Scan Time: 2025-11-01T10:30:00Z
-
-Action Required: Review changes and update Terraform or revert manual changes.
-```
 ## Cost Analysis
 
 **Monthly Operating Cost: ~$0.10 - $0.50**

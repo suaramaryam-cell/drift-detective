@@ -1,6 +1,6 @@
 # drift-detective
 
-> Automatically detects when AWS resources drift from their Terraform-defined state and sends alerts before configuration mismatches cause production issues.
+> Automatically detects when AWS resources drift from their Terraform defined state and sends alerts before configuration mismatches cause production issues.
 
 ## Summary
 
@@ -58,7 +58,6 @@ In cloud environments, manual changes made through the AWS Console often bypass 
   
 -  **Smart Alerting**
   - Detailed email notifications via SNS
-  - Highlights exact differences between Terraform and AWS
   - Shows both expected and actual values
   
 -  **Audit Trail**
